@@ -51,7 +51,8 @@ echo -e "$Color_Off"
 sleep 5
 yum update -y 
 yum install wget vim zip unzip -y
-
+yum install epel-release -y
+yum install certbot python2-certbot-apache mod_ssl -y
 
 
 echo -e "$BCyan                         ========================================================================="
@@ -67,7 +68,7 @@ read p
 
         case $p in
                 1) echo -e "$BCyan              Installing PHP 7.4 Under Process...... $Color_Off"
-                        sudo yum install epel-release -y
+                        
                         sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
                         yum --enablerepo=remi-php74 install php -y
                         yum --enablerepo=remi-php74 install php-xml php-soap php-xmlrpc php-mbstring php-json php-gd php-mcrypt  php-cli php-curl php-common php-intl php-mysqli php-pdo_mysql php-openssl php-zip php-imap php-ldap php-pdo_mysql -y
@@ -81,7 +82,7 @@ read p
                         break;;
 
                 2) echo -e "$BCyan              Installing PHP 8.0 Under Process...... $Color_Off"
-                        sudo yum install epel-release -y
+                      
                         sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
                         yum --enablerepo=remi-php80 install php -y
                         yum --enablerepo=remi-php80 install php-xml php-soap php-xmlrpc php-mbstring php-json php-gd php-mcrypt  php-cli php-curl php-common php-intl php-mysqli php-pdo_mysql php-openssl php-zip php-imap php-ldap php-pdo_mysql -y
