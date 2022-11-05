@@ -118,11 +118,11 @@ echo -e "$BCyan                         ========================================
 echo -e "$Color_Off"
 sleep 1
 while true; do
-echo -e "$BWhite We RECOMMEND MariaDB 10..... : $BGreen"
+echo -e "$BWhite We RECOMMEND MariaDB 10.5..... : $BGreen"
 sleep 1
 
 echo -e "$BWhite Please Choose Options..... : $BGreen"
-echo -en "$BWhite 1. MariaDB 10     2. MySQL 8   3.Cancel: $BGreen"
+echo -en "$BWhite 1. MariaDB 10.5     2. MySQL 8.0   3.Cancel: $BGreen"
 
 read mysql
 case $mysql in
@@ -268,7 +268,7 @@ done
 ####### Firewall ######
 
 while true; do
- echo -en "$BWhite Do you want allow Http/Https In Firewall ..... : $BGreen"
+ echo -en "$BWhite Do you want allow Http/Https In Firewall .....Yes/No : $BGreen"
  read firewall
         case $firewall in
             [yY][eE][sS]|[yY])
@@ -336,7 +336,7 @@ echo -e "$BCyan=================================================================
 echo -e "$Color_Off" ;;
         2) 
 echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                           MySQL 8 Has been Installed                                                  "
+echo -e "$BCyan                                           MySQL 8.0 Has been Installed                                                  "
 echo -e "$BCyan======================================================================================================================="
 echo -e "$Color_Off" ;; 
         3)
