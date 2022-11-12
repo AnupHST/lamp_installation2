@@ -1,9 +1,8 @@
 #!/bin/bash
-#!/bin/sh
 #######################################
 # In case of any errors (e.g. MySQL) just re-run the script. Nothing will be re-installed except for the packages with errors.
 #######################################
-#  Written by Anoop Singh from http://hostingshades.com/
+#  Written by Anoop Singh from https://www.hostingshades.com/
 
 #COLORS
 # Reset
@@ -28,46 +27,108 @@ BPurple='\033[1;35m'      # Purple
 BCyan='\033[1;36m'        # Cyan
 BWhite='\033[1;37m'       # White
 
-# Check if running as root  
+######################## Deafult Details ##################################
+MYSQL_PASSWD_DEF="Host@12345"
+
+
+################################### Check if running as root  
  if [ "$(id -u)" != "0" ]; then  
    echo -e "$BRed This script must be run as root $Color_Off" 1>&2  
    exit 1  
  fi  
 
-echo -e "$BCyan                         ========================================================================="
-echo -e "$BCyan                                   Downloading and Installing HRN_LAMP (Official installer)..."
-echo -e "$BCyan                         ========================================================================="
-echo -e "$Color_Off"
-sleep 3
+
+###################################### web server ##################################
+while true; do
+        echo -e "$BCyan------------------------ Please Choose Webserver ----------------------------$Color_Off"
+        echo -e "$BCyan------------------------ We Recommend Apache --------------------------------$Color_Off"
+        echo -en "$BWhite       1. Apache       2. Ngnix     3.Cancel :$BYellow"
+        read web
+   case $web in
+        1) break;;
+        2) break;;
+        3) echo -e "$Color_Off" 
+        break;;
+        *) echo -e "$BYellow Wrong Input ! Please Answer 1 ,2 or 3 $Color_Off" ;;
+    esac
+
+done
+################################## PHP ##################################
+while true; do
+        echo -e "$BCyan------------------------ Please Choose PHP Version --------------------------$Color_Off"
+        echo -en "$BWhite       1. PHP 7.4      2. PHP 8.0       3. Cancel : $BYellow"
+        read php
+      case $php in
+        1) break;;
+        2) break;;
+        3) echo -e "$Color_Off" 
+        break;;
+        *) echo -e "$BYellow Wrong Input ! Please Answer 1 ,2 or 3 $Color_Off" ;;
+    esac
+done
+#################################### MYSQL ##################################
+while true; do
+        echo -e "$BCyan------------------------ Please Choose MySQL Version ------------------------$Color_Off"
+        echo -e "$BCyan------------------------ We Recommend MariaDB 10.5 --------------------------$Color_Off"
+        echo -en "$BWhite       1. MariaDB 10.5     2. MySQL 8.0   3.Cancel: $BYellow"
+        read mysql
+        
+    
+    case $mysql in
+        1) echo -en "$BWhite Please Set MySQL Root Password $BGreen(Default Pass: $MYSQL_PASSWD_DEF):$BYellow"
+        read MYSQL_ROOT_PASSWORD
+        MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD:-$MYSQL_PASSWD_DEF}"
+
+        break;;
+        2) echo -en "$BWhite Please Set MySQL Root Password $BGreen(Default Pass: $MYSQL_PASSWD_DEF):$BYellow"
+        read MYSQL_ROOT_PASSWORD
+        MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD:-$MYSQL_PASSWD_DEF}"
+        
+        break;;
+
+        3) echo -e "$Color_Off" 
+        break;;
+        *) echo -e "$BYellow Wrong Input ! Please Answer 1 ,2 or 3 $Color_Off" ;;
+    esac
+
+        
+done
+
+################################### Firewall ##################################
+while true; do
+        echo -e "$BCyan------------------------ Please Choose Firewall  ----------------------------$Color_Off"
+        echo -en "$BWhite Do you want allow Http/Https In Firewall .....Yes/No : $BYellow"
+        read firewall
+        case $firewall in
+        [yY][eE][sS]|[yY]) break;;
+        [nN][oO]|[nN])  break;;
+        *) echo -e "$BYellow Wrong Input ! Please Answer Yes or No $Color_Off" 
+    esac
+done
 
 
-# Update packages and Upgrade system
 
-echo -e "$BCyan                         ========================================================================="
-echo -e "$BCyan                                   Update yum (default package-management utility for CentOS)..."
-echo -e "$BCyan                         ========================================================================="
-echo -e "$Color_Off"
+while true; 
+do
+echo -en "$BCyan Would you like to proceed to setting up the Lamp     Yes/No: $BYellow"
+read lamp
 
-sleep 5
+case $lamp in
+        y|Y|yes|Yes|YES)
+################################## Instaling Package ##################################
+echo -e "$BCyan------------------------ Downloading and Installing HRN_LAMP (Official installer) ----------------------------$Color_Off"
+sleep 1
 yum update -y 
-yum install wget vim zip unzip -y
-yum install epel-release -y
-yum install certbot python2-certbot-apache mod_ssl -y
+yum install wget vim zip unzip epel-release certbot python2-certbot-apache mod_ssl -y
 
 
-echo -e "$BCyan                         ========================================================================="
-echo -e "$BCyan                                                PHP Installation Under Process......"
-echo -e "$BCyan                         ========================================================================="
-echo -e "$Color_Off"
+################################## PHP Instalation ##################################
+echo -e "$BCyan------------------------ PHP Installation Under Process-------------------------------------------------------$Color_Off"
+
 while true; do
 
-echo -e "$BWhite Please Choose Options..... : $BGreen"
-echo -en "$BWhite 1. PHP 7.4      2. PHP 8.0       3. Cancel : $BGreen"
-read p
-
-
-        case $p in
-                1) echo -e "$BCyan              Installing PHP 7.4 Under Process...... $Color_Off"
+        case $php in
+                1) echo -e "$BCyan---------------------------Installing PHP 7.4 Under Process...... $Color_Off"
                         
                         sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
                         yum --enablerepo=remi-php74 install php -y
@@ -75,13 +136,12 @@ read p
                         cp /etc/php.ini  /etc/php.ini_original
                         sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 200M/' /etc/php.ini
                         sed -i 's/memory_limit = 128M/memory_limit = 200M/' /etc/php.ini
-                        echo -e "$BCyan    ========================================================================="
-                        echo -e "$BCyan                                                PHP Installation Completed ......"
-                        echo -e "$BCyan    ========================================================================="
-                        echo -e "$Color_Off"
+                        
+                        echo -e "$BCyan---------------------PHP Installation Completed--------------$Color_Off"
+                        
                         break;;
 
-                2) echo -e "$BCyan              Installing PHP 8.0 Under Process...... $Color_Off"
+                2) echo -e "$BCyan---------------------------Installing PHP 8.0 Under Process...... $Color_Off"
                       
                         sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
                         yum --enablerepo=remi-php80 install php -y
@@ -89,10 +149,7 @@ read p
                         cp /etc/php.ini  /etc/php.ini_original
                         sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 200M/' /etc/php.ini
                         sed -i 's/memory_limit = 128M/memory_limit = 200M/' /etc/php.ini
-                        echo -e "$BCyan    ========================================================================="
-                        echo -e "$BCyan                                                PHP Installation Completed ......"
-                        echo -e "$BCyan    ========================================================================="
-                        echo -e "$Color_Off"
+                        echo -e "$BCyan---------------------PHP Installation Completed--------------$Color_Off"
                         break;;
                 
                 3) echo -e "$Color_Off"
@@ -102,38 +159,14 @@ read p
         esac
 done
 
-
-
-
-
-# echo -e "$BCyan                         ========================================================================="
-# echo -e "$BCyan                                                PHP Installation Completed ......"
-# echo -e "$BCyan                         ========================================================================="
-# echo -e "$Color_Off"
-
-##############################################################################################
-##################################################### Installing MYSQL #######################
-echo -e "$BCyan                         ========================================================================="
-echo -e "$BCyan                                                MySQL Server Instalation........"
-echo -e "$BCyan                         ========================================================================="
-echo -e "$Color_Off"
+##################################################### Installing MYSQL #########################################################
+echo -e "$BCyan------------------------ MySQL Installation Under Process-----------------------------------------------------$Color_Off"
 sleep 1
 while true; do
-echo -e "$BWhite We RECOMMEND MariaDB 10.5..... : $BGreen"
-sleep 1
 
-echo -e "$BWhite Please Choose Options..... : $BGreen"
-echo -en "$BWhite 1. MariaDB 10.5     2. MySQL 8.0   3.Cancel: $BGreen"
-
-read mysql
 case $mysql in
-        1) 
-            echo -e "$BCyan                         ========================================================================="
-            echo -e "$BCyan                                                MariaDB Server Setup Under Process..."
-            echo -e "$BCyan                         ========================================================================="
-            echo -e "$Color_Off"
+        1)               echo -e "$BCyan------------MariaDB Server Setup Under Process--------------$Color_Off"
             
-
 echo "# MariaDB 10.5 CentOS repository list - created 2022-10-25 12:13 UTC
 # https://mariadb.org/download/
 [mariadb]
@@ -146,26 +179,13 @@ gpgcheck=1
             yum install -y mariadb-server
             sudo systemctl start mariadb
             sudo systemctl enable mariadb
-            # dbpass=$1
-            # echo -e "$BWhite Please Enter DB Root Password"
-            # read dbpass
-            echo -en "$BWhite Please Set MySQL Root Password:: $BGreen"
-            read  MYSQL_ROOT_PASSWORD
+        
             /usr/bin/mysqladmin -u root password $MYSQL_ROOT_PASSWORD
-            echo -e "$BCyan Database Password Updated Successfully...... $Color_Off"
             
-            echo -e "$BCyan                         ========================================================================="
-            echo -e "$BCyan                                                MariaDB Server Setup Completed..."
-            echo -e "$BCyan                         ========================================================================="
-            echo -e "$Color_Off"
+            echo -e "$BCyan------------MariaDB Server Setup Completed--------------$Color_Off"
             break;;
             
-        2) 
-            echo -e "$BCyan                         ========================================================================="
-            echo -e "$BCyan                                                MySQL 8 Server Setup Under Process..."
-            echo -e "$BCyan                         ========================================================================="
-            echo -e "$Color_Off"
-            
+        2) echo -e "$BCyan------------MySQL 8 Server Setup Under Process--------------$Color_Off"
 
             rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
             sed -i 's/enabled=1/enabled=0/' /etc/yum.repos.d/mysql-community.repo
@@ -173,12 +193,8 @@ gpgcheck=1
             yum --enablerepo=mysql80-community install mysql-community-server -y
             systemctl start mysqld.service
 
-
-            # get Temporary root Password
             root_temp_pass=$(sudo grep 'A temporary password' /var/log/mysqld.log |tail -1 |awk '{split($0,a,": "); print a[2]}')
-            # echo "root_temp_pass: " $root_temp_pass
-            echo -en "$BWhite Please Set MySQL Root Password:: $BGreen"
-            read  MYSQL_ROOT_PASSWORD
+            
             
 echo "[client]
 user=root
@@ -208,10 +224,7 @@ FLUSH PRIVILEGES;
 
             echo -e "$BCyan Database Password Updated Successfully...... $Color_Off"
             
-            echo -e "$BCyan                         ========================================================================="
-            echo -e "$BCyan                                                MySQL 8 Server Setup Completed..."
-            echo -e "$BCyan                         ========================================================================="
-            echo -e "$Color_Off"
+            echo -e "$BCyan------------MySQL Server Installation Done--------------$Color_Off"
             break;;
             
         3) echo -e "$Color_Off"
@@ -222,37 +235,19 @@ esac
 done
 
 #########
-
-echo -e "$BCyan                         ========================================================================="
-echo -e "$BCyan                                                Please choose webserver"
-echo -e "$BCyan                         ========================================================================="
-echo -e "$Color_Off"
+######################################### Webserver ####################################################################
 
 while true; do
-echo -e "$BWhite We RECOMMEND Apache : $Color_Off"
-echo -en "$BWhite 1. Apache       2. Ngnix     3.Cancel :$BGreen"
-read a
-   case $a in
-        1) 
-        echo -e "$BCyan                         ========================================================================="
-        echo -e "$BCyan                                                Apache Server Setup Under Process......          "
-        echo -e "$BCyan                         ========================================================================="
-        echo -e "$Color_Off"
-
+   case $web in
+        1) echo -e "$BCyan------------------------ Apache Server Setup Under Process-----------------------------------------------------$Color_Off"
+        
         yum install -y httpd 
         systemctl start httpd.service
         systemctl enable httpd.service
-
-        echo -e "$BCyan                         ========================================================================="
-        echo -e "$BCyan                                            Server Installation Successfully Completed           "
-        echo -e "$BCyan                         ========================================================================="
+        echo -e "$BCyan------------------------ Server Installation Successfully Completed-----------------------------------------------------$Color_Off"
         break;;
 
-        2) echo -e "$BCyan                      ========================================================================="
-        echo -e "$BCyan                                           Nginx Server Setup Under Process..."
-        echo -e "$BCyan                         ========================================================================="
-        echo -e "$Color_Off"
-        
+        2) echo -e "$BCyan------------------------ Nginx Server Setup Under Process-----------------------------------------------------$Color_Off"
         yum install -y nginx
         systemctl start nginx
         sudo systemctl enable nginx
@@ -266,11 +261,11 @@ done
 
 
 
-####### Firewall ######
+######################################### Firewall ########################################
 
 while true; do
- echo -en "$BWhite Do you want allow Http/Https In Firewall .....Yes/No : $BGreen"
- read firewall
+#  echo -en "$BWhite Do you want allow Http/Https In Firewall .....Yes/No : $BGreen"
+#  read firewall
         case $firewall in
             [yY][eE][sS]|[yY])
                         firewall-cmd --state
@@ -286,80 +281,65 @@ while true; do
             
     esac
 done
-#############################
-# Summery
-echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                            Server Installation Summary                                                "
-echo -e "$BCyan======================================================================================================================="
-echo -e "$Color_Off" 
 
-case $a in
+################################### Summery ##################################
+
+
+echo -e "$BCyan------------------------------- Server Installation Summary ---------------------------------$Color_Off"
+case $web in
         1) 
-echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                            Apache Has been Installed                                                  "
-echo -e "$BCyan======================================================================================================================="
-echo -e "$Color_Off" ;;        
+         echo -e "$BCyan------------------------------- Apache Has been Installed ---------------------------------$Color_Off"
+         ;; 
         2)
-echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                            Nginx Has been Installed                                                   "
-echo -e "$BCyan======================================================================================================================="
-echo -e "$Color_Off" ;; 
+         echo -e "$BCyan------------------------------- Nginx Has been Installed ---------------------------------$Color_Off"
+         ;; 
         3)
-echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                            Webserver Installation Was Canceled                                                "
-echo -e "$BCyan======================================================================================================================="
-echo -e "$Color_Off" ;; 
+         echo -e "$BCyan------------------------------- Webserver Installation Was Canceled ---------------------------------$Color_Off"
+         ;; 
 esac
 
-case $p in
+case $php in
         1)
-echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                            PHP 7.4 Has been Installed                                                 "
-echo -e "$BCyan======================================================================================================================="
-echo -e "$Color_Off" ;;        
-        2) 
-echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                            PHP 8.0 Has been Installed                                                 "
-echo -e "$BCyan======================================================================================================================="
-echo -e "$Color_Off" ;;  
+         echo -e "$BCyan------------------------------- PHP 7.4 Has been Installed ---------------------------------$Color_Off"
+         ;;        
+        2)
+         echo -e "$BCyan------------------------------- PHP 8.0 Has been Installed ---------------------------------$Color_Off" 
+         ;;  
         3)
-echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                            PHP Installation Was Canceled                                                 "
-echo -e "$BCyan======================================================================================================================="
-echo -e "$Color_Off" ;;                        
+         echo -e "$BCyan------------------------------- PHP Installation Was Canceled  ---------------------------------$Color_Off"
+         ;;                        
 esac
 
 case $mysql in
         1)
-echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                            MariaDB 10.5 Has been Installed                                            "
-echo -e "$BCyan======================================================================================================================="
-echo -e "$Color_Off" ;;
-        2) 
-echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                           MySQL 8.0 Has been Installed                                                  "
-echo -e "$BCyan======================================================================================================================="
-echo -e "$Color_Off" ;; 
+         echo -e "$BCyan------------------------------- MariaDB 10.5 Has been Installed ---------------------------------$Color_Off"
+         ;;
+        2)
+         echo -e "$BCyan------------------------------- MySQL 8.0 Has been Installed ---------------------------------$Color_Off" 
+         ;; 
         3)
-echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                            MySQL Installation Was Canceled                                               "
-echo -e "$BCyan======================================================================================================================="
-echo -e "$Color_Off" ;;         
+         echo -e "$BCyan------------------------------- MySQL Installation Was Canceled ---------------------------------$Color_Off"
+        ;;         
 
 esac
 
 case $firewall in
         [yY][eE][sS]|[yY])
-echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                           Allowed Http/Https In Firewall                                           "
-echo -e "$BCyan======================================================================================================================="
-echo -e "$Color_Off" ;;
-        [nN][oO]|[nN]) 
-echo -e "$BCyan======================================================================================================================="
-echo -e "$BCyan                                               Firewall exit                                                 "
-echo -e "$BCyan======================================================================================================================="
-echo -e "$Color_Off" ;;         
-
+         echo -e "$BCyan------------------------------- Allowed Http/Https In Firewall ---------------------------------$Color_Off"
+         ;;
+        [nN][oO]|[nN])
+         echo -e "$BCyan------------------------------- Firewall exit  ---------------------------------$Color_Off" 
+         ;;         
 esac
  
+ break;;
+
+
+
+        n|N|no|No|NO) echo -e "$BRed The lamp Installation Has Been Canceled $Color_Off"
+        exit;;
  
+        *) echo -e "$BYellow Wrong Input ! Please Answer Yes or No $Color_Off" 
+ 
+esac
+done
