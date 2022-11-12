@@ -1,8 +1,9 @@
 #!/bin/bash
+#!/bin/sh
 #######################################
 # In case of any errors (e.g. MySQL) just re-run the script. Nothing will be re-installed except for the packages with errors.
 #######################################
-#  Written by Anoop Singh from https://www.hostingshades.com/
+#  Written by Anoop Singh from http://hostingshades.com/
 
 #COLORS
 # Reset
@@ -121,6 +122,13 @@ sleep 1
 yum update -y 
 yum install wget vim zip unzip epel-release certbot python2-certbot-apache mod_ssl -y
 
+# Setup automatic cert renewal
+
+systemctl enable certbot-renew.service
+systemctl enable certbot-renew.timer
+systemctl start certbot-renew.service
+systemctl start certbot-renew.timer
+systemctl list-timers --all | grep certbot
 
 ################################## PHP Instalation ##################################
 echo -e "$BCyan------------------------ PHP Installation Under Process-------------------------------------------------------$Color_Off"
