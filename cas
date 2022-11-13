@@ -16,10 +16,9 @@ TOMCAT_VER="9.0.68"
 TOMCAT_USER="tomcat" 
 TOMCAT_URL="https://dlcdn.apache.org/tomcat/tomcat-9/v$TOMCAT_VER/bin/apache-tomcat-$TOMCAT_VER.tar.gz"
 
-
+# Apereo Defaults
 APEREO_CAS_VER="6.6" # Used to do a git checkout
 APEREOCAS_USER="apereo" # The user name and group of the cas
-
 DOMAIN_NAME_DEF="mycompany.com"
 
 echo -en "$BGreen Enter a valid hostname or public domain such as mydomain.com : $BYellow"
@@ -31,13 +30,7 @@ CAS_SERVER_NAME_DEF="https://$DOMAIN_NAME"
 CAS_SERVER_PREFIX_DEF="https://$DOMAIN_NAME/cas"
 CAS_AUTHORIZATION_ENDPOINT_DEF="https://$DOMAIN_NAME/cas"
 CAS_REDIRECT_URI_DEF="https://$DOMAIN_NAME"
-
-
-
-# Apereo Defaults
-
 CAS_HOME="/etc/cas/config"
-
 CAS_SERVER_NAME_DEF="https://$DOMAIN_NAME"
 CAS_SERVER_PREFIX_DEF="https://$DOMAIN_NAME/cas"
 CAS_AUTHN_PAC4J_GOOGLE_ID_DEF="111111111--sgmxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com"
@@ -45,12 +38,12 @@ CAS_AUTHN_PAC4J_GOOGLE_SECRET_DEF="secret123"
 CAS_AUTHN_PAC4J_GOOGLE_SCOPE_DEF="EMAIL_AND_PROFILE"
 CAS_SERVICEREGISTRY_JSON_LOCATION_DEF="file:$CAS_HOME/services/"
 
-#CAS_SERVICE_NAME_DEF="GuacamoleRAS"
-#CAS_SERVICE_ID_DEF="10000001"
- CAS_AUTHORIZATION_ENDPOINT_DEF="https://$DOMAIN_NAME/cas"
-# CAS_REDIRECT_URI_DEF="https://$DOMAIN_NAME/guacamole"
- CAS_PREFIX_KEY_DEF="https://localhost:8443"
- CAS_PREFIX_DEF="127.0.0.1"
+CAS_SERVICE_NAME_DEF="SuiteCRM"
+CAS_SERVICE_ID_DEF="10000001"
+CAS_AUTHORIZATION_ENDPOINT_DEF="https://$DOMAIN_NAME/cas"
+CAS_REDIRECT_URI_DEF="https://$DOMAIN_NAME/suitecrm"
+CAS_PREFIX_KEY_DEF="https://localhost:8443"
+CAS_PREFIX_DEF="127.0.0.1"
 # CAS_DB_NAME_DEF="cas_db"
 # CAS_DB_USER_DEF="db_user_cas"
 # CAS_DB_PASSWORD_DEF="cas_password"
@@ -64,10 +57,7 @@ CAS_INSTALL_DIR="/usr/local/src" # CAS source directory dir
 
 
 
-
-
-
-
+############################ Reading Data #############################
 echo -en "$BGreen Enter the Apereo CAS server name (default $CAS_SERVER_NAME_DEF) : $BYellow"
 read CAS_SERVER_NAME
 CAS_SERVER_NAME="${CAS_SERVER_NAME:-$CAS_SERVER_NAME_DEF}"
@@ -76,9 +66,9 @@ echo -en "$BGreen Enter the CAS Authorization Endpoint (default $CAS_AUTHORIZATI
 read CAS_AUTHORIZATION_ENDPOINT
 CAS_AUTHORIZATION_ENDPOINT="${CAS_AUTHORIZATION_ENDPOINT:-$CAS_AUTHORIZATION_ENDPOINT_DEF}"
         
-# echo -en "$BGreen Enter the redirect URI for CAS (default $CAS_REDIRECT_URI_DEF): $BYellow"
-# read CAS_REDIRECT_URI
-# CAS_REDIRECT_URI="${CAS_REDIRECT_URI:-$CAS_REDIRECT_URI_DEF}"
+echo -en "$BGreen Enter the redirect URI for CAS (default $CAS_REDIRECT_URI_DEF): $BYellow"
+read CAS_REDIRECT_URI
+CAS_REDIRECT_URI="${CAS_REDIRECT_URI:-$CAS_REDIRECT_URI_DEF}"
         
 # echo -en "$BGreen Enter the Apereo CAS DB Name (default $CAS_DB_NAME_DEF) : $BYellow"
 # read CAS_DB_NAME
@@ -121,24 +111,29 @@ echo -en "$BGreen Enter the Apereo CAS Service registry location (default $CAS_S
 read CAS_SERVICEREGISTRY_JSON_LOCATION
 CAS_SERVICEREGISTRY_JSON_LOCATION="${CAS_SERVICEREGISTRY_JSON_LOCATION:-$CAS_SERVICEREGISTRY_JSON_LOCATION_DEF}"
         
-# echo -en "$BGreen Enter the Apereo CAS service name (default $CAS_SERVICE_NAME_DEF) : $BYellow"
-# read CAS_SERVICE_NAME
-# CAS_SERVICE_NAME="${CAS_SERVICE_NAME:-$CAS_SERVICE_NAME_DEF}"
+echo -en "$BGreen Enter the Apereo CAS service name (default $CAS_SERVICE_NAME_DEF) : $BYellow"
+read CAS_SERVICE_NAME
+CAS_SERVICE_NAME="${CAS_SERVICE_NAME:-$CAS_SERVICE_NAME_DEF}"
         
-# echo -en "$BGreen Enter the Apereo CAS service ID (default $CAS_SERVICE_ID_DEF) : $BYellow"
-# read CAS_SERVICE_ID
-# CAS_SERVICE_ID="${CAS_SERVICE_ID:-$CAS_SERVICE_ID_DEF}"
+echo -en "$BGreen Enter the Apereo CAS service ID (default $CAS_SERVICE_ID_DEF) : $BYellow"
+read CAS_SERVICE_ID
+CAS_SERVICE_ID="${CAS_SERVICE_ID:-$CAS_SERVICE_ID_DEF}"
         
 ######
 # Install Java
+echo -e "$BCyan------------------------------- Updating ---------------------------------$Color_Off"
 yum update -y
 yum -y install git wget vim 
-echo -en "$BGreen Installing JAVA $Color_Off"
+yum install epel-release -y
+yum install -y cairo-devel ffmpeg-devel freerdp-devel freerdp-plugins gcc gnu-free-mono-fonts libjpeg-turbo-devel libjpeg-turbo-official libpng-devel libssh2-devel libtelnet-devel libvncserver-devel libgcrypt-devel libvorbis-devel libwebp-devel libwebsockets-devel policycoreutils-python pulseaudio-libs-devel setroubleshoot uuid-devel nano mlocate net-tools wget telnet mlocate policycoreutils-python autoconf automake git libtool jq #java-11-openjdk-11.0.17.0.8-1.el7_9 java-11-openjdk-devel-11.0.17.0.8-1.el7_9
+
+
+echo -e "$BCyan------------------------------- Installing JAVA --------------------------$Color_Off"
 sudo yum install java-11-openjdk-devel -y
 
 
 # Tomcat
-echo -en "$BGreen Installing Tomcat $Color_Off"
+echo -e "$BCyan------------------------------- Installing Tomcat ------------------------$Color_Off"
 sudo useradd -m -U -d $TOMCAT_INSTALL_DIR/tomcat -s /bin/false $TOMCAT_USER
 sudo chown -R $TOMCAT_USER: $TOMCAT_INSTALL_DIR/tomcat
 cd /tmp
@@ -183,7 +178,7 @@ WantedBy=multi-user.target
 
 
 ###### Install CAS   
-echo -en "$BGreen Installing CAS $Color_Off"
+echo -e "$BCyan------------------------------- Installing CAS ------------------------------------$Color_Off"
 cd $CAS_INSTALL_DIR
 git clone "$APEREO_GIT_URL" --branch $APEREO_CAS_VER
 # sed -i '129i \    implementation "org.apereo.cas:cas-server-support-pac4j-webflow"' cas-overlay-template/build.gradle
@@ -243,19 +238,30 @@ cas.serviceRegistry.json.location=$CAS_SERVICEREGISTRY_JSON_LOCATION
             
             break;;
 			
-            *|"" ) echo "$BGreen Please enter yes or no. $BYellow";;
+            *|"" ) echo -e "$BGreen Please enter yes or no. $BYellow";;
 	esac
 done
 
 ########################
 
+json=$(jq -n --arg CAS_REDIRECT_URI "^(https)://.*" --arg CAS_SERVICE_NAME "$CAS_SERVICE_NAME" --arg CAS_SERVICE_ID "$CAS_SERVICE_ID" \
+         '{"@class" : "org.apereo.cas.services.RegexRegisteredService",
+            serviceId : $CAS_REDIRECT_URI,
+            name : $CAS_SERVICE_NAME,
+            id : $CAS_SERVICE_ID,
+            description : "Guacamole Remote Access Service",
+            evaluationOrder : 1
+          }')
+    echo "$json" > "$CAS_SERVICE_NAME-$CAS_SERVICE_ID".json
+
+cp "$CAS_SERVICE_NAME-$CAS_SERVICE_ID".json $CAS_HOME/services/
 #cp cas-overlay-template/etc/cas/config/cas.properties $CAS_PROPERTIES_PATH
 #cp cas-overlay-template/etc/cas/config/cas.properties /etc/cas/config/application.properties  #LOGIN ISSUE
 
 # cp cas-overlay-template/etc/cas/config/log4j2.xml $CAS_LOG4J2_PATH
 cp cas-overlay-template/etc/cas/config/log4j2.xml /etc/cas/config/log4j2.xml
 
-echo -en "$BGreen Downloading and configuring CAS $APEREO_CAS_VER...    "
+echo -e "$BCyan------------------------------- Downloading and configuring CAS $APEREO_CAS_VER ------------------- $Color_Off"
     
 echo "Current directory"
 pwd   
