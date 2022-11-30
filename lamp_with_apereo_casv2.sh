@@ -31,7 +31,7 @@ BWhite='\033[1;37m'       # White
 MYSQL_PASSWD_DEF="Host@12345"
 #Tomcat Install
 TOMCAT_INSTALL_DIR="/usr/share"
-TOMCAT_VER="9.0.68"
+TOMCAT_VER="9.0.69"
 TOMCAT_USER="tomcat" 
 TOMCAT_URL="https://dlcdn.apache.org/tomcat/tomcat-9/v$TOMCAT_VER/bin/apache-tomcat-$TOMCAT_VER.tar.gz"
 
@@ -65,6 +65,7 @@ php_def="2"
 mysql_def="1"
 cas_def="yes"
 ping_def="yes"
+firewall_def="yes"
 ################################### Check if running as root  
  if [ "$(id -u)" != "0" ]; then  
    echo -e "$BRed This script must be run as root $Color_Off" 1>&2  
@@ -135,8 +136,9 @@ done
 ################################### Firewall ##################################
 while true; do
         echo -e "$BCyan------------------------ Please Choose Firewall  ----------------------------$Color_Off"
-        echo -en "$BGreen Do you want to allow Http/Https In Firewall .....Yes/No : $BYellow"
+        echo -en "$BGreen Do you want to allow Http/Https In Firewall .....Yes/No $BWhite[Deafult Is Yes]: $BYellow"
         read firewall
+        firewall="${firewall:-$firewall_def}"
         case $firewall in
         [yY][eE][sS]|[yY]) break;;
         [nN][oO]|[nN])  break;;
@@ -149,26 +151,38 @@ while true; do
         echo -en "$BGreen Do you want to Install APEREO CAS .....Yes/No $BWhite[Deafult Is Yes]: $BYellow"
         read cas
         cas="${cas:-$cas_def}"
-        case $cas in
+    case $cas in
         [yY][eE][sS]|[yY]) 
 
         echo -en "$BGreen Enter a valid hostname or public domain such as $BWhite mydomain.com : $BYellow"
-read DOMAIN_NAME
+        read DOMAIN_NAME
 
-        while true; do
-                echo -en "$BGreen Do you want to ping $DOMAIN_NAME [Deafult Is Yes]: $BYellow"
-                echo -en "$BGreen"
-                read ping
-                ping="${ping:-$ping_def}"
-                case $ping in
-                [yY][eE][sS]|[yY]) 
-                ping -c 5 $DOMAIN_NAME
-                echo -e "$Color_Off"
-                break;;
-                [nN][oO]|[nN])  break;;
-                *) echo -e "$BYellow Wrong Input ! Please Answer Yes or No $Color_Off" 
-        esac
-        done
+        echo -en "$BGreen Do you want to ping $DOMAIN_NAME $BWhite[Deafult Is Yes]: $BYellow"
+        echo -en "$BGreen"
+        read ping1
+        ping1="${ping1:-$ping_def}"
+            while true; do
+                case $ping1 in
+                    [yY][eE][sS]|[yY]) 
+                    
+                        ping=$(ping -c 3 ${DOMAIN_NAME})
+                        if [[ ${ping} ]]; then
+                            
+                            #echo -e "$BGreen $DOMAIN_NAME ${ping}"
+                            echo -e "$BGreen $DOMAIN_NAME is reachable successfully"
+                            break 1
+                        else
+                            echo -e " $BYellow $DOMAIN_NAME is unreachable "
+                            echo -en "$BGreen Please re-enter domain name: $BYellow" 
+                            read DOMAIN_NAME  
+                        fi
+                    
+                        echo  -e "$Color_Off" ;;
+                    [nN][oO]|[nN])  break;;
+                    
+                    *) echo  "$BYellow Wrong Input ! Please Answer Yes or No $Color_Off" 
+                esac
+            done
 
 
 CAS_SERVER_NAME_DEF="https://$DOMAIN_NAME"
@@ -463,6 +477,8 @@ while true; do
                         firewall-cmd --state
                         firewall-cmd --zone=public --permanent --add-service=http
                         firewall-cmd --zone=public --permanent --add-service=https
+                        firewall-cmd --zone=public --permanent --add-port=8080/tcp
+                        firewall-cmd --zone=public --permanent --add-port=8443/tcp
                         firewall-cmd --reload
                         break;;
             
@@ -549,7 +565,7 @@ cas.view.defaultRedirectUrl=$CAS_REDIRECT_URI
 cas.authn.pac4j.google.id=$CAS_AUTHN_PAC4J_GOOGLE_ID
 cas.authn.pac4j.google.secret=$CAS_AUTHN_PAC4J_GOOGLE_SECRET
 cas.authn.pac4j.google.scope=$CAS_AUTHN_PAC4J_GOOGLE_SCOPE
-
+cas.authn.pac4j.google.principalAttributed=email
 cas.serviceRegistry.json.location=$CAS_SERVICEREGISTRY_JSON_LOCATION
 " > cas-overlay-template/etc/cas/config/cas.properties
                     break;;
@@ -600,8 +616,12 @@ cd $CAS_INSTALL_DIR/cas-overlay-template
 
 cd .. 
 cp $CAS_INSTALL_DIR/cas-overlay-template/build/libs/cas.war /etc/cas/ 
+mkdir -p /opt/etc
+ln -sf -T /etc/cas /opt/etc/cas
 ln -sf -T /etc/cas/cas.war $TOMCAT_INSTALL_DIR/tomcat/webapps/cas.war
 ln -sf -T $TOMCAT_INSTALL_DIR/tomcat /opt/tomcat
+ln -sf -T /etc/cas "$CAS_INSTALL_PATH"
+
 chown -R $TOMCAT_USER:$TOMCAT_USER /etc/cas    
 chown -R $TOMCAT_USER:$TOMCAT_USER $TOMCAT_INSTALL_DIR/tomcat/webapps/
 
